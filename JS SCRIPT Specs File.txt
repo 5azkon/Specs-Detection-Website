@@ -1,0 +1,49 @@
+let video = document.getElementById("webcam");
+let result = document.getElementById("result");
+
+let model;
+let ctx;
+let canvas = document.getElementById("canvas");
+
+async function setupCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 300, height: 300 },
+    audio: false,
+  });
+  video.srcObject = stream;
+  return new Promise((resolve) => {
+    video.onloadedmetadata = () => resolve(video);
+  });
+}
+
+async function loadModel() {
+  result.innerText = "Loading model...";
+  model = await tflite.loadTFLiteModel("model.tflite");
+  result.innerText = "Model loaded!";
+}
+
+function preprocessFrame(video) {
+  ctx.drawImage(video, 0, 0, 300, 300);
+  let imgData = tf.browser.fromPixels(canvas).resizeBilinear([224, 224]).toFloat();
+  imgData = imgData.div(tf.scalar(255)).expandDims(0);
+  return imgData;
+}
+
+async function detectSpecs() {
+  const input = preprocessFrame(video);
+  const prediction = await model.predict(input);
+  const predictionArray = prediction.dataSync();
+  const label = predictionArray[0] > predictionArray[1] ? "With Specs" : "Without Specs";
+  result.innerText = label;
+  input.dispose();
+  prediction.dispose();
+}
+
+async function init() {
+  await setupCamera();
+  ctx = canvas.getContext("2d");
+  await loadModel();
+  setInterval(detectSpecs, 1000);
+}
+
+init();
