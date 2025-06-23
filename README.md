@@ -31,7 +31,8 @@ This is a **learning-based project** designed to detect whether a person is wear
 
 ---
 
-## 📂 Project Working Real-Time
+## 📂 Real-Time working model
+Click Here
 [Specs detection model](https://5azkon-specs-detection-model.netlify.app/)
 
 
